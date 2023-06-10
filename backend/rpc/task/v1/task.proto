@@ -1,0 +1,49 @@
+syntax = "proto3";
+
+package rpc.task.v1;
+
+import "google/protobuf/timestamp.proto";
+
+option go_package = "connect-back/gen/rpc/task/v1;taskv1";
+
+service TaskService {
+  rpc GetTaskList(GetTaskListRequest) returns (GetTaskListResponse) {}
+  rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {}
+  rpc CompleteTask(CompleteTaskRequest) returns (CompleteTaskResponse) {}
+  rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {}
+}
+
+message Task {
+  string id = 1;
+  string user_id = 2;
+  string name = 3;
+  bool id_completed = 4;
+  google.protobuf.Timestamp created_at = 5;
+  google.protobuf.Timestamp updated_at = 6;
+}
+
+message GetTaskListRequest {}
+
+message GetTaskListResponse {
+  repeated Task tasks = 1;
+}
+
+message CreateTaskRequest {
+  string name = 1;
+}
+
+message CreateTaskResponse {
+  string created_id = 1;
+}
+
+message CompleteTaskRequest {
+  string task_id = 1;
+}
+
+message CompleteTaskResponse {}
+
+message DeleteTaskRequest {
+  string task_id = 1;
+}
+
+message DeleteTaskResponse {}
