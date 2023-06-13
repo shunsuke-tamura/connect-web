@@ -14,7 +14,7 @@ service TaskService {
 }
 
 message Task {
-  string id = 1;
+  int64 id = 1;
   string user_id = 2;
   string name = 3;
   bool id_completed = 4;
@@ -33,17 +33,17 @@ message CreateTaskRequest {
 }
 
 message CreateTaskResponse {
-  string created_id = 1;
+  int64 created_id = 1;
 }
 
 message CompleteTaskRequest {
-  string task_id = 1;
+  int64 task_id = 1;
 }
 
 message CompleteTaskResponse {}
 
 message DeleteTaskRequest {
-  string task_id = 1;
+  int64 task_id = 1;
 }
 
 message DeleteTaskResponse {}

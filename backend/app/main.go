@@ -4,12 +4,14 @@ import (
 	"context"
 	"log"
 	"net/http"
+	"time"
 
 	"connect-back/db"
 	taskv1 "connect-back/gen/rpc/task/v1"
 	"connect-back/gen/rpc/task/v1/taskv1connect"
 
 	_ "github.com/go-sql-driver/mysql"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	"github.com/bufbuild/connect-go"
 	connect_go "github.com/bufbuild/connect-go"
@@ -22,16 +24,26 @@ type TaskListServer struct{}
 
 func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Request[taskv1.GetTaskListRequest]) (*connect_go.Response[taskv1.GetTaskListResponse], error) {
 	log.Println("Request headers: ", req.Header())
-	testTasks := []*taskv1.Task{
-		{
-			Id:          "1",
-			UserId:      "123",
-			Name:        "GetTaskList",
-			IdCompleted: true,
-		},
+	rows, err := db.Db.Query("select * from tasks")
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer rows.Close()
+	var tasks []*taskv1.Task
+	for rows.Next() {
+		var task taskv1.Task
+		var createdAt time.Time
+		var updatedAt time.Time
+		err := rows.Scan(&task.Id, &task.UserId, &task.Name, &task.IdCompleted, &createdAt, &updatedAt)
+		if err != nil {
+			log.Fatal(err)
+		}
+		task.CreatedAt = timestamppb.New(createdAt)
+		task.UpdatedAt = timestamppb.New(updatedAt)
+		tasks = append(tasks, &task)
 	}
 	res := connect.NewResponse(&taskv1.GetTaskListResponse{
-		Tasks: testTasks,
+		Tasks: tasks,
 	})
 	return res, nil
 }
@@ -39,7 +51,7 @@ func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Reques
 func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request[taskv1.CreateTaskRequest]) (*connect_go.Response[taskv1.CreateTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
 	res := connect.NewResponse(&taskv1.CreateTaskResponse{
-		CreatedId: "CreateTask",
+		CreatedId: 1,
 	})
 	return res, nil
 }
