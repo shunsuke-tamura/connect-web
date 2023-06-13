@@ -1,0 +1,1 @@
+ALTER TABLE tasks change id_completed is_completed boolean

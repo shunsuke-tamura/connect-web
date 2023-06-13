@@ -1,0 +1,1 @@
+ALTER TABLE tasks rename column is_completed to id_completed

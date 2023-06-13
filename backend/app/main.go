@@ -34,7 +34,7 @@ func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Reques
 		var task taskv1.Task
 		var createdAt time.Time
 		var updatedAt time.Time
-		err := rows.Scan(&task.Id, &task.UserId, &task.Name, &task.IdCompleted, &createdAt, &updatedAt)
+		err := rows.Scan(&task.Id, &task.UserId, &task.Name, &task.IsCompleted, &createdAt, &updatedAt)
 		if err != nil {
 			log.Fatal(err)
 		}
@@ -50,7 +50,7 @@ func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Reques
 
 func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request[taskv1.CreateTaskRequest]) (*connect_go.Response[taskv1.CreateTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
-	resu, err := db.Db.Exec("insert into tasks(user_id, name, id_completed) values ('123', ?, false)", req.Msg.Name)
+	resu, err := db.Db.Exec("insert into tasks(user_id, name, is_completed) values ('123', ?, false)", req.Msg.Name)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -66,7 +66,7 @@ func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request
 
 func (s *TaskListServer) CompleteTask(ctx context.Context, req *connect_go.Request[taskv1.CompleteTaskRequest]) (*connect_go.Response[taskv1.CompleteTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
-	_, err := db.Db.Exec("update tasks set id_completed = true where id = ?", req.Msg.TaskId)
+	_, err := db.Db.Exec("update tasks set is_completed = true where id = ?", req.Msg.TaskId)
 	if err != nil {
 		log.Fatal(err)
 	}

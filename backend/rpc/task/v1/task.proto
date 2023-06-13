@@ -17,7 +17,7 @@ message Task {
   int64 id = 1;
   string user_id = 2;
   string name = 3;
-  bool id_completed = 4;
+  bool is_completed = 4;
   google.protobuf.Timestamp created_at = 5;
   google.protobuf.Timestamp updated_at = 6;
 }
