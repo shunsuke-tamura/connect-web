@@ -50,8 +50,16 @@ func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Reques
 
 func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request[taskv1.CreateTaskRequest]) (*connect_go.Response[taskv1.CreateTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
+	resu, err := db.Db.Exec("insert into tasks(user_id, name, id_completed) values ('123', ?, false)", req.Msg.Name)
+	if err != nil {
+		log.Fatal(err)
+	}
+	lastId, err := resu.LastInsertId()
+	if err != nil {
+		log.Fatal(err)
+	}
 	res := connect.NewResponse(&taskv1.CreateTaskResponse{
-		CreatedId: 1,
+		CreatedId: lastId,
 	})
 	return res, nil
 }
