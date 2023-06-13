@@ -66,12 +66,20 @@ func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request
 
 func (s *TaskListServer) CompleteTask(ctx context.Context, req *connect_go.Request[taskv1.CompleteTaskRequest]) (*connect_go.Response[taskv1.CompleteTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
+	_, err := db.Db.Exec("update tasks set id_completed = true where id = ?", req.Msg.TaskId)
+	if err != nil {
+		log.Fatal(err)
+	}
 	res := connect.NewResponse(&taskv1.CompleteTaskResponse{})
 	return res, nil
 }
 
 func (s *TaskListServer) DeleteTask(ctx context.Context, req *connect_go.Request[taskv1.DeleteTaskRequest]) (*connect_go.Response[taskv1.DeleteTaskResponse], error) {
 	log.Println("Request headers: ", req.Header())
+	_, err := db.Db.Exec("delete from tasks where id = ?", req.Msg.TaskId)
+	if err != nil {
+		log.Fatal(err)
+	}
 	res := connect.NewResponse(&taskv1.DeleteTaskResponse{})
 	return res, nil
 }
