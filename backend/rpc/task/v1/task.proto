@@ -7,7 +7,7 @@ import "google/protobuf/timestamp.proto";
 option go_package = "connect-back/gen/rpc/task/v1;taskv1";
 
 service TaskService {
-  rpc GetTaskList(GetTaskListRequest) returns (GetTaskListResponse) {}
+  rpc GetTaskList(GetTaskListRequest) returns (stream GetTaskListResponse) {}
   rpc CreateTask(CreateTaskRequest) returns (CreateTaskResponse) {}
   rpc CompleteTask(CompleteTaskRequest) returns (CompleteTaskResponse) {}
   rpc DeleteTask(DeleteTaskRequest) returns (DeleteTaskResponse) {}

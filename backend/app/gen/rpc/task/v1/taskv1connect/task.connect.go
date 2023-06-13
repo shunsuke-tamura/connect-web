@@ -46,7 +46,7 @@ const (
 
 // TaskServiceClient is a client for the rpc.task.v1.TaskService service.
 type TaskServiceClient interface {
-	GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.Response[v1.GetTaskListResponse], error)
+	GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.ServerStreamForClient[v1.GetTaskListResponse], error)
 	CreateTask(context.Context, *connect_go.Request[v1.CreateTaskRequest]) (*connect_go.Response[v1.CreateTaskResponse], error)
 	CompleteTask(context.Context, *connect_go.Request[v1.CompleteTaskRequest]) (*connect_go.Response[v1.CompleteTaskResponse], error)
 	DeleteTask(context.Context, *connect_go.Request[v1.DeleteTaskRequest]) (*connect_go.Response[v1.DeleteTaskResponse], error)
@@ -94,8 +94,8 @@ type taskServiceClient struct {
 }
 
 // GetTaskList calls rpc.task.v1.TaskService.GetTaskList.
-func (c *taskServiceClient) GetTaskList(ctx context.Context, req *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.Response[v1.GetTaskListResponse], error) {
-	return c.getTaskList.CallUnary(ctx, req)
+func (c *taskServiceClient) GetTaskList(ctx context.Context, req *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.ServerStreamForClient[v1.GetTaskListResponse], error) {
+	return c.getTaskList.CallServerStream(ctx, req)
 }
 
 // CreateTask calls rpc.task.v1.TaskService.CreateTask.
@@ -115,7 +115,7 @@ func (c *taskServiceClient) DeleteTask(ctx context.Context, req *connect_go.Requ
 
 // TaskServiceHandler is an implementation of the rpc.task.v1.TaskService service.
 type TaskServiceHandler interface {
-	GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.Response[v1.GetTaskListResponse], error)
+	GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest], *connect_go.ServerStream[v1.GetTaskListResponse]) error
 	CreateTask(context.Context, *connect_go.Request[v1.CreateTaskRequest]) (*connect_go.Response[v1.CreateTaskResponse], error)
 	CompleteTask(context.Context, *connect_go.Request[v1.CompleteTaskRequest]) (*connect_go.Response[v1.CompleteTaskResponse], error)
 	DeleteTask(context.Context, *connect_go.Request[v1.DeleteTaskRequest]) (*connect_go.Response[v1.DeleteTaskResponse], error)
@@ -128,7 +128,7 @@ type TaskServiceHandler interface {
 // and JSON codecs. They also support gzip compression.
 func NewTaskServiceHandler(svc TaskServiceHandler, opts ...connect_go.HandlerOption) (string, http.Handler) {
 	mux := http.NewServeMux()
-	mux.Handle(TaskServiceGetTaskListProcedure, connect_go.NewUnaryHandler(
+	mux.Handle(TaskServiceGetTaskListProcedure, connect_go.NewServerStreamHandler(
 		TaskServiceGetTaskListProcedure,
 		svc.GetTaskList,
 		opts...,
@@ -154,8 +154,8 @@ func NewTaskServiceHandler(svc TaskServiceHandler, opts ...connect_go.HandlerOpt
 // UnimplementedTaskServiceHandler returns CodeUnimplemented from all methods.
 type UnimplementedTaskServiceHandler struct{}
 
-func (UnimplementedTaskServiceHandler) GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest]) (*connect_go.Response[v1.GetTaskListResponse], error) {
-	return nil, connect_go.NewError(connect_go.CodeUnimplemented, errors.New("rpc.task.v1.TaskService.GetTaskList is not implemented"))
+func (UnimplementedTaskServiceHandler) GetTaskList(context.Context, *connect_go.Request[v1.GetTaskListRequest], *connect_go.ServerStream[v1.GetTaskListResponse]) error {
+	return connect_go.NewError(connect_go.CodeUnimplemented, errors.New("rpc.task.v1.TaskService.GetTaskList is not implemented"))
 }
 
 func (UnimplementedTaskServiceHandler) CreateTask(context.Context, *connect_go.Request[v1.CreateTaskRequest]) (*connect_go.Response[v1.CreateTaskResponse], error) {

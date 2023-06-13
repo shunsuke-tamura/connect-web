@@ -15,15 +15,17 @@ import (
 
 	"github.com/bufbuild/connect-go"
 	connect_go "github.com/bufbuild/connect-go"
+	grpcreflect "github.com/bufbuild/connect-grpcreflect-go"
 	"github.com/rs/cors"
 	"golang.org/x/net/http2"
 	"golang.org/x/net/http2/h2c"
 )
 
+var stream *connect_go.ServerStream[taskv1.GetTaskListResponse]
+
 type TaskListServer struct{}
 
-func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Request[taskv1.GetTaskListRequest]) (*connect_go.Response[taskv1.GetTaskListResponse], error) {
-	log.Println("Request headers: ", req.Header())
+func fetchTasks() []*taskv1.Task {
 	rows, err := db.Db.Query("select * from tasks")
 	if err != nil {
 		log.Fatal(err)
@@ -42,10 +44,17 @@ func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Reques
 		task.UpdatedAt = timestamppb.New(updatedAt)
 		tasks = append(tasks, &task)
 	}
-	res := connect.NewResponse(&taskv1.GetTaskListResponse{
-		Tasks: tasks,
+	return tasks
+}
+
+func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Request[taskv1.GetTaskListRequest], stm *connect_go.ServerStream[taskv1.GetTaskListResponse]) error {
+	log.Println("Request headers: ", req.Header())
+	stream = stm
+	stream.Send(&taskv1.GetTaskListResponse{
+		Tasks: fetchTasks(),
 	})
-	return res, nil
+	time.Sleep(60 * time.Second)
+	return nil
 }
 
 func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request[taskv1.CreateTaskRequest]) (*connect_go.Response[taskv1.CreateTaskResponse], error) {
@@ -61,6 +70,9 @@ func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request
 	res := connect.NewResponse(&taskv1.CreateTaskResponse{
 		CreatedId: lastId,
 	})
+	stream.Send(&taskv1.GetTaskListResponse{
+		Tasks: fetchTasks(),
+	})
 	return res, nil
 }
 
@@ -71,6 +83,9 @@ func (s *TaskListServer) CompleteTask(ctx context.Context, req *connect_go.Reque
 		log.Fatal(err)
 	}
 	res := connect.NewResponse(&taskv1.CompleteTaskResponse{})
+	stream.Send(&taskv1.GetTaskListResponse{
+		Tasks: fetchTasks(),
+	})
 	return res, nil
 }
 
@@ -81,6 +96,9 @@ func (s *TaskListServer) DeleteTask(ctx context.Context, req *connect_go.Request
 		log.Fatal(err)
 	}
 	res := connect.NewResponse(&taskv1.DeleteTaskResponse{})
+	stream.Send(&taskv1.GetTaskListResponse{
+		Tasks: fetchTasks(),
+	})
 	return res, nil
 }
 
@@ -88,6 +106,11 @@ func main() {
 	db.Init()
 	s := &TaskListServer{}
 	mux := http.NewServeMux()
+	reflector := grpcreflect.NewStaticReflector(
+		"rpc.task.v1.TaskService", // 作成したサービスを指定
+	)
+	mux.Handle(grpcreflect.NewHandlerV1(reflector))
+	mux.Handle(grpcreflect.NewHandlerV1Alpha(reflector))
 	path, handler := taskv1connect.NewTaskServiceHandler(s)
 	mux.Handle(path, handler)
 	log.Println("server is launched")
