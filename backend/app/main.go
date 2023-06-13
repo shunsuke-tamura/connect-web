@@ -5,8 +5,11 @@ import (
 	"log"
 	"net/http"
 
+	"connect-back/db"
 	taskv1 "connect-back/gen/rpc/task/v1"
 	"connect-back/gen/rpc/task/v1/taskv1connect"
+
+	_ "github.com/go-sql-driver/mysql"
 
 	"github.com/bufbuild/connect-go"
 	connect_go "github.com/bufbuild/connect-go"
@@ -54,11 +57,12 @@ func (s *TaskListServer) DeleteTask(ctx context.Context, req *connect_go.Request
 }
 
 func main() {
+	db.Init()
 	s := &TaskListServer{}
 	mux := http.NewServeMux()
 	path, handler := taskv1connect.NewTaskServiceHandler(s)
 	mux.Handle(path, handler)
-	log.Println("lounch server")
+	log.Println("server is launched")
 	http.ListenAndServe(
 		"0.0.0.0:8080",
 		cors.AllowAll().Handler(
@@ -66,4 +70,5 @@ func main() {
 			h2c.NewHandler(mux, &http2.Server{}),
 		),
 	)
+	defer db.Db.Close()
 }
