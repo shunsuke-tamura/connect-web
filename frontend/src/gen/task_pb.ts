@@ -4,16 +4,16 @@
 // @ts-nocheck
 
 import type { BinaryReadOptions, FieldList, JsonReadOptions, JsonValue, PartialMessage, PlainMessage } from "@bufbuild/protobuf";
-import { Message, proto3, Timestamp } from "@bufbuild/protobuf";
+import { Message, proto3, protoInt64, Timestamp } from "@bufbuild/protobuf";
 
 /**
  * @generated from message rpc.task.v1.Task
  */
 export class Task extends Message<Task> {
   /**
-   * @generated from field: string id = 1;
+   * @generated from field: int64 id = 1;
    */
-  id = "";
+  id = protoInt64.zero;
 
   /**
    * @generated from field: string user_id = 2;
@@ -26,9 +26,9 @@ export class Task extends Message<Task> {
   name = "";
 
   /**
-   * @generated from field: bool id_completed = 4;
+   * @generated from field: bool is_completed = 4;
    */
-  idCompleted = false;
+  isCompleted = false;
 
   /**
    * @generated from field: google.protobuf.Timestamp created_at = 5;
@@ -48,10 +48,10 @@ export class Task extends Message<Task> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "rpc.task.v1.Task";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
     { no: 2, name: "user_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
     { no: 3, name: "name", kind: "scalar", T: 9 /* ScalarType.STRING */ },
-    { no: 4, name: "id_completed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
+    { no: 4, name: "is_completed", kind: "scalar", T: 8 /* ScalarType.BOOL */ },
     { no: 5, name: "created_at", kind: "message", T: Timestamp },
     { no: 6, name: "updated_at", kind: "message", T: Timestamp },
   ]);
@@ -183,9 +183,9 @@ export class CreateTaskRequest extends Message<CreateTaskRequest> {
  */
 export class CreateTaskResponse extends Message<CreateTaskResponse> {
   /**
-   * @generated from field: string created_id = 1;
+   * @generated from field: int64 created_id = 1;
    */
-  createdId = "";
+  createdId = protoInt64.zero;
 
   constructor(data?: PartialMessage<CreateTaskResponse>) {
     super();
@@ -195,7 +195,7 @@ export class CreateTaskResponse extends Message<CreateTaskResponse> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "rpc.task.v1.CreateTaskResponse";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "created_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "created_id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CreateTaskResponse {
@@ -220,9 +220,9 @@ export class CreateTaskResponse extends Message<CreateTaskResponse> {
  */
 export class CompleteTaskRequest extends Message<CompleteTaskRequest> {
   /**
-   * @generated from field: string task_id = 1;
+   * @generated from field: int64 task_id = 1;
    */
-  taskId = "";
+  taskId = protoInt64.zero;
 
   constructor(data?: PartialMessage<CompleteTaskRequest>) {
     super();
@@ -232,7 +232,7 @@ export class CompleteTaskRequest extends Message<CompleteTaskRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "rpc.task.v1.CompleteTaskRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "task_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "task_id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): CompleteTaskRequest {
@@ -288,9 +288,9 @@ export class CompleteTaskResponse extends Message<CompleteTaskResponse> {
  */
 export class DeleteTaskRequest extends Message<DeleteTaskRequest> {
   /**
-   * @generated from field: string task_id = 1;
+   * @generated from field: int64 task_id = 1;
    */
-  taskId = "";
+  taskId = protoInt64.zero;
 
   constructor(data?: PartialMessage<DeleteTaskRequest>) {
     super();
@@ -300,7 +300,7 @@ export class DeleteTaskRequest extends Message<DeleteTaskRequest> {
   static readonly runtime: typeof proto3 = proto3;
   static readonly typeName = "rpc.task.v1.DeleteTaskRequest";
   static readonly fields: FieldList = proto3.util.newFieldList(() => [
-    { no: 1, name: "task_id", kind: "scalar", T: 9 /* ScalarType.STRING */ },
+    { no: 1, name: "task_id", kind: "scalar", T: 3 /* ScalarType.INT64 */ },
   ]);
 
   static fromBinary(bytes: Uint8Array, options?: Partial<BinaryReadOptions>): DeleteTaskRequest {

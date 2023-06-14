@@ -19,7 +19,7 @@ export const TaskService = {
       name: "GetTaskList",
       I: GetTaskListRequest,
       O: GetTaskListResponse,
-      kind: MethodKind.Unary,
+      kind: MethodKind.ServerStreaming,
     },
     /**
      * @generated from rpc rpc.task.v1.TaskService.CreateTask

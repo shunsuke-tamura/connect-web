@@ -1,19 +1,35 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import reactLogo from "./assets/react.svg";
 import viteLogo from "/vite.svg";
 import "./App.css";
 
 import { useClient } from "./common/use-client";
 import { TaskService } from "./gen/task_connect";
+import { Task } from "./gen/task_pb";
+import { JsonValue } from "@bufbuild/protobuf";
 
 function App() {
   const [count, setCount] = useState(0);
+  const [tasks, setTasks] = useState<JsonValue>("");
 
-  useClient(TaskService)
-    .getTaskList({})
-    .then((res) => {
-      console.log(res.toJson());
-    });
+  useEffect(() => {
+    console.log("effect", tasks);
+  });
+
+  const c = useClient(TaskService);
+  const send = async () => {
+    const stream = c.getTaskList({});
+    for await (const res of stream) {
+      res.toJson() === tasks ?? setTasks(res.toJson());
+      console.log("stream", res.toJson());
+    }
+  };
+  send();
+  // useClient(TaskService)
+  //   .getTaskList({})
+  //   .then((res) => {
+  //     console.log(res.toJson());
+  //   });
   return (
     <>
       <div>
