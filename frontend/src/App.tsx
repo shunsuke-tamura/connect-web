@@ -33,16 +33,19 @@ function App() {
 
   const addTask = () => {
     c.createTask(new CreateTaskRequest({ name: title }));
+    setTitle("");
+  };
+
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
+    addTask();
+    e.preventDefault();
   };
 
   return (
     <>
       <h1>ToDoアプリ</h1>
       <button onClick={() => send()}>fetch</button>
-      <form
-        onSubmit={undefined}
-        onKeyDown={(e) => e.key === "Enter" ?? addTask()}
-      >
+      <form onSubmit={(e) => handleSubmit(e)}>
         <input
           type="text"
           placeholder="タスクを入力"
