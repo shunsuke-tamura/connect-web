@@ -1,57 +1,65 @@
-import { useEffect, useState } from "react";
-import reactLogo from "./assets/react.svg";
-import viteLogo from "/vite.svg";
+import { Suspense, useEffect, useState } from "react";
+
 import "./App.css";
 
 import { useClient } from "./common/use-client";
 import { TaskService } from "./gen/task_connect";
-import { Task } from "./gen/task_pb";
-import { JsonValue } from "@bufbuild/protobuf";
+import { CreateTaskRequest, Task } from "./gen/task_pb";
+import TaskCard from "./components/TaskCard";
 
 function App() {
-  const [count, setCount] = useState(0);
-  const [tasks, setTasks] = useState<JsonValue>("");
+  const [title, setTitle] = useState("");
+  const [tasks, setTasks] = useState<Task[]>([]);
 
   useEffect(() => {
-    console.log("effect", tasks);
+    const now = new Date();
+    console.log(
+      `${now.getHours()}:${now.getMinutes()}:${now.getSeconds()}`,
+      tasks
+    );
   });
 
   const c = useClient(TaskService);
   const send = async () => {
     const stream = c.getTaskList({});
     for await (const res of stream) {
-      res.toJson() === tasks ?? setTasks(res.toJson());
-      console.log("stream", res.toJson());
+      if (res.tasks !== tasks) setTasks(res.tasks);
     }
   };
-  send();
-  // useClient(TaskService)
-  //   .getTaskList({})
-  //   .then((res) => {
-  //     console.log(res.toJson());
-  //   });
+
+  useEffect(() => {
+    // send();
+  });
+
+  const addTask = () => {
+    c.createTask(new CreateTaskRequest({ name: title }));
+  };
+
   return (
     <>
-      <div>
-        <a href="https://vitejs.dev" target="_blank">
-          <img src={viteLogo} className="logo" alt="Vite logo" />
-        </a>
-        <a href="https://react.dev" target="_blank">
-          <img src={reactLogo} className="logo react" alt="React logo" />
-        </a>
-      </div>
-      <h1>Vite + React</h1>
-      <div className="card">
-        <button onClick={() => setCount((count) => count + 1)}>
-          count is {count}
+      <h1>ToDoアプリ</h1>
+      <button onClick={() => send()}>fetch</button>
+      <form
+        onSubmit={undefined}
+        onKeyDown={(e) => e.key === "Enter" ?? addTask()}
+      >
+        <input
+          type="text"
+          placeholder="タスクを入力"
+          value={title}
+          onChange={(e) => setTitle(e.target.value)}
+        />
+        <button type="button" onClick={() => addTask()}>
+          追加
         </button>
-        <p>
-          Edit <code>src/App.tsx</code> and save to test HMR
-        </p>
-      </div>
-      <p className="read-the-docs">
-        Click on the Vite and React logos to learn more
-      </p>
+      </form>
+      <Suspense fallback={<p>Loading...</p>}>
+        <div>
+          {tasks.map((task) => {
+            return <TaskCard task={task} key={Number(task.id)}></TaskCard>;
+          })}
+        </div>
+      </Suspense>
     </>
   );
 }

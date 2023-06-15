@@ -21,7 +21,7 @@ import (
 	"golang.org/x/net/http2/h2c"
 )
 
-var stream *connect_go.ServerStream[taskv1.GetTaskListResponse]
+var streams []*connect_go.ServerStream[taskv1.GetTaskListResponse]
 
 type TaskListServer struct{}
 
@@ -48,17 +48,19 @@ func fetchTasks() []*taskv1.Task {
 }
 
 func (s *TaskListServer) GetTaskList(ctx context.Context, req *connect_go.Request[taskv1.GetTaskListRequest], stm *connect_go.ServerStream[taskv1.GetTaskListResponse]) error {
-	log.Println("Request headers: ", req.Header())
-	stream = stm
-	stream.Send(&taskv1.GetTaskListResponse{
+	log.Println("GetTaskList \n Request headers: ", req.Header())
+	streams = append(streams, stm)
+	log.Println("len(streams)::", len(streams))
+	stm.Send(&taskv1.GetTaskListResponse{
 		Tasks: fetchTasks(),
 	})
-	time.Sleep(60 * time.Second)
-	return nil
+	for {
+		// ここの関数を抜けるとセッションが切れるらしい
+	}
 }
 
 func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request[taskv1.CreateTaskRequest]) (*connect_go.Response[taskv1.CreateTaskResponse], error) {
-	log.Println("Request headers: ", req.Header())
+	log.Println("CreateTask \n Request headers: ", req.Header())
 	resu, err := db.Db.Exec("insert into tasks(user_id, name, is_completed) values ('123', ?, false)", req.Msg.Name)
 	if err != nil {
 		log.Fatal(err)
@@ -70,35 +72,41 @@ func (s *TaskListServer) CreateTask(ctx context.Context, req *connect_go.Request
 	res := connect.NewResponse(&taskv1.CreateTaskResponse{
 		CreatedId: lastId,
 	})
-	stream.Send(&taskv1.GetTaskListResponse{
-		Tasks: fetchTasks(),
-	})
+	for _, stream := range streams {
+		stream.Send(&taskv1.GetTaskListResponse{
+			Tasks: fetchTasks(),
+		})
+	}
 	return res, nil
 }
 
 func (s *TaskListServer) CompleteTask(ctx context.Context, req *connect_go.Request[taskv1.CompleteTaskRequest]) (*connect_go.Response[taskv1.CompleteTaskResponse], error) {
-	log.Println("Request headers: ", req.Header())
+	log.Println("CompleteTask \n Request headers: ", req.Header())
 	_, err := db.Db.Exec("update tasks set is_completed = true where id = ?", req.Msg.TaskId)
 	if err != nil {
 		log.Fatal(err)
 	}
 	res := connect.NewResponse(&taskv1.CompleteTaskResponse{})
-	stream.Send(&taskv1.GetTaskListResponse{
-		Tasks: fetchTasks(),
-	})
+	for _, stream := range streams {
+		stream.Send(&taskv1.GetTaskListResponse{
+			Tasks: fetchTasks(),
+		})
+	}
 	return res, nil
 }
 
 func (s *TaskListServer) DeleteTask(ctx context.Context, req *connect_go.Request[taskv1.DeleteTaskRequest]) (*connect_go.Response[taskv1.DeleteTaskResponse], error) {
-	log.Println("Request headers: ", req.Header())
+	log.Println("DeleteTask \n Request headers: ", req.Header())
 	_, err := db.Db.Exec("delete from tasks where id = ?", req.Msg.TaskId)
 	if err != nil {
 		log.Fatal(err)
 	}
 	res := connect.NewResponse(&taskv1.DeleteTaskResponse{})
-	stream.Send(&taskv1.GetTaskListResponse{
-		Tasks: fetchTasks(),
-	})
+	for _, stream := range streams {
+		stream.Send(&taskv1.GetTaskListResponse{
+			Tasks: fetchTasks(),
+		})
+	}
 	return res, nil
 }
 
